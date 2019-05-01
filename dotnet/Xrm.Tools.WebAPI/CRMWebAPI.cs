@@ -55,7 +55,7 @@ namespace Xrm.Tools.WebAPI
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _crmWebAPIConfig.AccessToken);
             }
 
-            SetHttpClientDefaults(_crmWebAPIConfig.CallerID);
+            SetHttpClientDefaults(_crmWebAPIConfig.CallerID, this._crmWebAPIConfig.HttpTimeoutMinutes);
         }
 
         /// <summary>
@@ -65,7 +65,8 @@ namespace Xrm.Tools.WebAPI
         /// <param name="accessToken">allows for hard coded access token for testing</param>
         /// <param name="callerID">user id to impersonate on calls</param>
         /// <param name="getAccessToken">method to call to refresh access token, called before each use of token</param>
-        public CRMWebAPI(string apiUrl, string accessToken, Guid callerID = default(Guid), Func<string, Task<string>> getAccessToken = null)
+        /// <param name="timeoutMinutes">HttpClient timeout in minutes</param>
+        public CRMWebAPI(string apiUrl, string accessToken, Guid callerID = default(Guid), Func<string, Task<string>> getAccessToken = null, int timeoutMinutes=2)
         {
             _crmWebAPIConfig = new CRMWebAPIConfig
             {
@@ -77,7 +78,7 @@ namespace Xrm.Tools.WebAPI
 
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _crmWebAPIConfig.AccessToken);
-            SetHttpClientDefaults(callerID);
+            SetHttpClientDefaults(callerID, timeoutMinutes);
         }
 
         /// <summary>
@@ -85,7 +86,8 @@ namespace Xrm.Tools.WebAPI
         /// </summary>
         /// <param name="apiUrl"></param>
         /// <param name="networkCredential"></param>
-        public CRMWebAPI(string apiUrl, NetworkCredential networkCredential = null, Guid callerID = default(Guid))
+        /// <param name="timeoutMinutes">HttpClient timeout in minutes</param>
+        public CRMWebAPI(string apiUrl, NetworkCredential networkCredential = null, Guid callerID = default(Guid), int timeoutMinutes=2)
         {
             _crmWebAPIConfig = new CRMWebAPIConfig
             {
@@ -99,7 +101,7 @@ namespace Xrm.Tools.WebAPI
             else
                 _httpClient = new HttpClient();
 
-            SetHttpClientDefaults(callerID);
+            SetHttpClientDefaults(callerID, timeoutMinutes);
         }
 
         /// <summary>
@@ -909,7 +911,8 @@ namespace Xrm.Tools.WebAPI
         /// helper method to setup the httpclient defaults
         /// </summary>
         /// <param name="callerID"></param>
-        private void SetHttpClientDefaults(Guid callerID)
+        /// <param name="timeoutMinutes">HttpClient timeout in minutes</param>
+        private void SetHttpClientDefaults(Guid callerID, int httpTimeoutMinutes=2)
         {
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             _httpClient.DefaultRequestHeaders.Add("OData-MaxVersion", "4.0");
@@ -918,7 +921,7 @@ namespace Xrm.Tools.WebAPI
             if (callerID != Guid.Empty)
                 _httpClient.DefaultRequestHeaders.Add("MSCRMCallerID", callerID.ToString());
 
-            _httpClient.Timeout = new TimeSpan(0, 2, 0);
+            _httpClient.Timeout = new TimeSpan(0, httpTimeoutMinutes, 0);
         }
         /// <summary>
         ///  helper method to setup the request track-changes header

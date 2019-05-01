@@ -14,5 +14,7 @@ namespace Xrm.Tools.WebAPI.Requests
         public NetworkCredential   NetworkCredential { get; set; }
         public CRMWebAPILoggingOptions Logging { get; set; }
 
+        public int HttpTimeoutMinutes { get; set; }
+
     }
 }
